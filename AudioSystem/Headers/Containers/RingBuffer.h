@@ -29,7 +29,8 @@ namespace container {
 template <class _Type, std::uint8_t _Partitions, std::uint32_t _Size>
 class RingBuffer {
   using BufferSize = std::uint32_t;
-
+  using BufferIterator = std::_Array_iterator < _Type, static_cast<size_t>(_Size) * _Partitions>;
+  using BufferConstIterator = std::_Array_const_iterator < _Type, static_cast<size_t>(_Size) * _Partitions>;
 public:
   RingBuffer() {
     static_assert(_Partitions > 0 && _Size > 0,
@@ -60,7 +61,7 @@ public:
    * @param index to retrieve data (without shifting)
    */
 
-  const auto GetPartitionDataConst(std::uint8_t index) {
+  BufferConstIterator GetPartitionDataConst(std::uint8_t index) {
     return GetPartitionPointer(index);
   }
 
@@ -68,7 +69,7 @@ public:
    * Get pointer to the partition
    * @param index to retrieve data (without shifting)
    */
-  _Type *GetPartitionData(std::uint8_t index) const {
+  BufferIterator GetPartitionData(std::uint8_t index) const {
     return GetPartitionPointer(index);
   }
 
@@ -92,7 +93,7 @@ public:
   [[nodiscard]] BufferSize GetBufferSize() const { return mBuffer.size(); }
 
 private:
-  [[nodiscard]] auto GetPartitionPointer(std::uint8_t index) {
+  [[nodiscard]] BufferIterator GetPartitionPointer(std::uint8_t index) {
     return (isIndexInRange(index))
                ? mBuffer.begin() + (ShiftIndex(index) * _Size)
                : mBuffer.end();
