@@ -1,6 +1,5 @@
 #include <array>
 #include <cstdint>
-#include <type_traits>
 
 namespace container {
 
@@ -29,13 +28,20 @@ namespace container {
 template <class _Type, std::uint8_t _Partitions, std::uint32_t _Size>
 class RingBuffer {
   using BufferSize = std::uint32_t;
-  using BufferIterator = std::_Array_iterator < _Type, static_cast<size_t>(_Size) * _Partitions>;
-  using BufferConstIterator = std::_Array_const_iterator < _Type, static_cast<size_t>(_Size) * _Partitions>;
+  using BufferIterator =
+      std::_Array_iterator<_Type, static_cast<size_t>(_Size) * _Partitions>;
+  using BufferConstIterator =
+      std::_Array_const_iterator<_Type,
+                                 static_cast<size_t>(_Size) * _Partitions>;
+
 public:
   RingBuffer() {
     static_assert(_Partitions > 0 && _Size > 0,
                   "Can't declare a Ring Buffer without partitions or size 0");
+
+    mBuffer.fill(0.f);
   }
+
   ~RingBuffer() = default;
 
   /**
@@ -51,7 +57,7 @@ public:
   }
 
   /**
-   * Shits the Ring Buffer
+   * Shifts the Ring Buffer
    */
 
   void Shift() { mShifts = (mShifts + 1) % _Partitions; }
@@ -69,7 +75,7 @@ public:
    * Get pointer to the partition
    * @param index to retrieve data (without shifting)
    */
-  BufferIterator GetPartitionData(std::uint8_t index) const {
+  BufferIterator GetPartitionData(std::uint8_t index) {
     return GetPartitionPointer(index);
   }
 
@@ -91,6 +97,8 @@ public:
    * @return buffer size
    */
   [[nodiscard]] BufferSize GetBufferSize() const { return mBuffer.size(); }
+
+  [[nodiscard]] std::uint8_t GetPartitionsCount() const { return _Partitions; }
 
 private:
   [[nodiscard]] BufferIterator GetPartitionPointer(std::uint8_t index) {
